@@ -19,6 +19,8 @@ export function subscribeToTasks(
   const tasksRef = collection(db, 'users', userId, 'tasks');
   const q = query(tasksRef, orderBy('createdAt', 'desc'));
 
+  console.log('[TaskService] subscribeToTasks → userId:', userId, '| path: users/' + userId + '/tasks');
+
   return onSnapshot(q, (snapshot) => {
     const tasks: Task[] = snapshot.docs.map((docSnap) => {
       const data = docSnap.data();
@@ -40,10 +42,11 @@ export function subscribeToTasks(
 
 export async function addTask(task: Omit<Task, 'id'>): Promise<void> {
   const tasksRef = collection(db, 'users', task.userId, 'tasks');
+  console.log('[TaskService] addTask → path: users/' + task.userId + '/tasks | data:', JSON.stringify({ ...task, createdAt: task.createdAt.toISOString() }));
   await addDoc(tasksRef, {
     ...task,
     createdAt: Timestamp.fromDate(task.createdAt),
-    dueDate: task.dueDate ? Timestamp.fromDate(task.dueDate) : null,
+    ...(task.dueDate ? { dueDate: Timestamp.fromDate(task.dueDate) } : {}),
   });
 }
 
